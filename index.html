@@ -94,6 +94,7 @@ details.dn2,details.g{margin:8px 0}details.dn2>summary,details.g>summary{min-hei
 <label>কখন মাপলেন<select id="w"><option value="f">খালি পেটে / খাবারের আগে</option><option value="p">খাবারের ২ ঘণ্টা পরে</option></select></label>
 <label>কোন বেলা<select id="ml"><option value="M">সকাল (৬ ইউনিট)</option><option value="N">দুপুর (নেই)</option><option value="E">রাত (৪ ইউনিট)</option></select></label>
 <label class="w">খাবার<select id="ea"><option value="y">স্বাভাবিক খাব</option><option value="h">অর্ধেক খাব</option><option value="n">খেতে পারছি না / বমি হচ্ছে</option></select></label>
+<label class="w">আগের সময়ে মেপে থাকলে তারিখ ও সময় দিন (ফাঁকা থাকলে এখনকার সময়)<input id="gdt" type="datetime-local"></label>
 </div>
 <div id="rc"></div>
 <div class="fg"><label>আমি নিলাম (ইউনিট)<input id="u" lang="en" type="text" inputmode="decimal" placeholder="e.g. 6"></label><div class="bt"><button class="p" id="sv">রেকর্ড করুন</button></div></div>
@@ -101,11 +102,10 @@ details.dn2,details.g{margin:8px 0}details.dn2>summary,details.g>summary{min-hei
 <h3>সাম্প্রতিক রেকর্ড</h3><div id="il"></div></div>
 
 <h2>প্রেসার মাপুন</h2>
-<div class="cd"><div class="fg"><label>উপরের (Systolic)<input id="bs" lang="en" type="text" inputmode="numeric" placeholder="e.g. 120"></label><label>নিচের (Diastolic)<input id="bd" lang="en" type="text" inputmode="numeric" placeholder="e.g. 80"></label></div>
+<div class="cd"><div class="fg"><label>উপরের (Systolic)<input id="bs" lang="en" type="text" inputmode="numeric" placeholder="e.g. 120"></label><label>নিচের (Diastolic)<input id="bd" lang="en" type="text" inputmode="numeric" placeholder="e.g. 80"></label><label class="w">আগের সময়ে মেপে থাকলে তারিখ ও সময় দিন (ফাঁকা থাকলে এখনকার সময়)<input id="bdt" type="datetime-local"></label></div>
 <button class="p" id="bv">রেকর্ড করুন</button><div id="bm"></div><h3>সাম্প্রতিক রেকর্ড</h3><div id="bl"></div></div>
 
-<h2>রেকর্ড এক্সপোর্ট</h2>
-<div class="cd"><p class="mu">ওষুধ, প্রয়োজনের ওষুধ, সুগার/ইনসুলিন ও প্রেসারের সব ফর্মের রেকর্ড একটি CSV ফাইলে ডাউনলোড করুন (Excel-এ খোলা যাবে)।</p><div class="rw"><button class="p" id="ex">CSV ডাউনলোড</button><small class="mu" id="exn"></small></div></div>
+<h2>সব রেকর্ড ডাউনলোড</h2><div class="cd"><p class="mu">ওষুধ, সুগার ও ইনসুলিন, প্রেসার — সব রেকর্ড একটি CSV ফাইলে (Excel বা Google Sheets-এ খোলা যাবে)।</p><button class="p" id="ex">CSV ডাউনলোড করুন</button><p class="mu" id="exm"></p></div>
 
 <h2>আসন্ন ঘটনা</h2><div id="ev"></div>
 <p class="mu">এই পাতা ডাক্তারের ছুটির সারাংশ (১৬/১১/২০২৬) থেকে তৈরি; এটি ডাক্তারের পরামর্শের বিকল্প নয়। কোনো ওষুধ নিজে বন্ধ বা বদলাবেন না। রেকর্ড অনলাইনে জমা থাকে এবং পাসকোড জানা সবাই সব ডিভাইসে দেখতে পারেন।</p>
@@ -149,7 +149,7 @@ at=(d,h)=>new Date(d.getFullYear(),d.getMonth(),d.getDate(),h),dif=(a,b)=>Math.r
 fd=d=>bn(d.getDate())+' '+MN[d.getMonth()],
 ft=(h,m)=>(h<4?'রাত':h<6?'ভোর':h<12?'সকাল':h<15?'দুপুর':h<18?'বিকাল':h<20?'সন্ধ্যা':'রাত')+' '+bn((h%12||12)+':'+P(m||0)),
 sh=t=>new Date(t+new Date(t).getTimezoneOffset()*6e4+216e5),NOW=()=>sh(Date.now()),tm=t=>{const d=sh(t);return ft(d.getHours(),d.getMinutes())};
-const hm=h=>ft(Math.floor(h),Math.round(h%1*60)),OP={},
+const pt=id=>{const v=$(id).value;return v?Date.parse(v+':00+06:00'):Date.now()},hm=h=>ft(Math.floor(h),Math.round(h%1*60)),OP={},
 DIET=[{n:'সকালের নাস্তা',s:'নাস্তা',a:8.5,z:9,i:['২ টা রুটি','১ কাপ সবজি (আলু ছাড়া)','১ টি ডিম সিদ্ধ'],o:'১ চা চামচ'},
 {n:'ফল (সকাল)',s:'ফল',a:10,z:10.5,i:['১ টা আপেল বা নাশপাতি (মাঝারি সাইজের) বা পেয়ারা (বিচি ছাড়া) বা পাকা পেঁপে (সামান্য পরিমানে)']},
 {n:'দুপুরের খাবার',s:'দুপুর',a:14,z:14.5,i:['১ কাপ ভাত (১৬০ গ্রাম)','১ কাপ সবজি (আলু ছাড়া)','১/২ লাল শাক বা লাউ শাক (সপ্তাহে ১-২ দিন)','৩ পিস মাছ বা মুরগির মাংস (৩০ গ্রাম/পিস)'],o:'২ চা চামচ'},
@@ -254,7 +254,7 @@ const SW=[];['M','N','E'].forEach(k=>['f','p'].forEach(w=>{const m=MEAL[k],a=m.h
 if(hh<a||D.ins.some(e=>ymd(sh(e.t))==ymd(td)&&e.ml==k&&(e.w||'f')==w))return;const act=hh<z;SW.push({k,w,act});
 const rule=act&&w=='f'?(BASE[k]?' • সুগার '+bn(INS_MIN.toFixed(1))+'-এর নিচে হলে ইনসুলিন নেবেন না; '+bn(INS_MIN.toFixed(1))+' বা বেশি হলে নির্ধারিত '+bn(BASE[k])+' ইউনিট':' • এই বেলায় ইনসুলিন নির্ধারিত নেই'):'';
 A.push([act?'wn':'er','<b>'+(act?'সুগার মাপুন (mmol/L) — ':'বাদ পড়েছে — ')+m[w]+'</b><br><small>'+(act?TGT[w]+rule:'সময় পেরিয়ে গেছে; এখন মাপলে রেকর্ড করে রাখুন')+'</small><br><button data-gm="'+k+'" data-gw="'+w+'">সুগার লিখুন</button>'])}));
-const cw=SW.find(x=>x.act)||SW[SW.length-1];$('sf').classList.toggle('now',!!(cw&&cw.act));if(cw&&!$('g').value&&document.activeElement!==$('g')){$('ml').value=cw.k;$('w').value=cw.w}
+const cw=SW.find(x=>x.act)||SW[SW.length-1];$('sf').classList.toggle('now',!!(cw&&cw.act));if(cw&&!$('g').value&&!$('gdt').value&&document.activeElement!==$('g')){$('ml').value=cw.k;$('w').value=cw.w}
 const pre=D.ins.filter(e=>e.g&&e.w!='p').slice(-1)[0],shP=pre&&now-sh(pre.t)<72e5;
 if(shP){const r=adv(pre.g,'f',pre.ml,pre.ea||'y'),ex=pre.u>r.u?' • ⚠ রেকর্ডে '+bn(pre.u)+' ইউনিট — পরামর্শের চেয়ে বেশি, সুগার আবার মাপুন ও ডাক্তারকে জানান':pre.u>0?' • রেকর্ড করা: '+bn(pre.u)+' ইউনিট ✓':r.u>0?' • ইনসুলিন নেওয়ার রেকর্ড এখনো নেই':'';
 A.push([r.c,'<b>'+SL[pre.ml][0]+'র সুগার '+bn(pre.g)+' mmol/L — '+r.h+'</b><br><small>'+r.t+ex+'</small>'])}
@@ -287,31 +287,32 @@ function rLogs(){const f=t=>{const d=sh(t);return fd(d)+' '+tm(t)},
 row=(a,k,fn)=>a.map((e,i)=>[e,i]).slice(-5).reverse().map(r=>'<div class="lg"><span>'+f(r[0].t)+'</span><span>'+fn(r[0])+'</span><button class="x" data-x="'+k+':'+r[1]+'" aria-label="মুছুন">×</button></div>').join('')||'<p class="mu">এখনো কোনো রেকর্ড নেই।</p>';
 $('il').innerHTML=row(D.ins,'ins',e=>'সুগার '+bn(e.g)+' • ইনসুলিন '+bn(e.u)+' ইউনিট • '+SL[e.ml][0]+(e.by?' • '+e.by:''));
 $('bl').innerHTML=row(D.bp,'bp',e=>bn(e.s)+'/'+bn(e.d)+' — '+bs(e.s,e.d)[0]+(e.by?' • '+e.by:''))}
-const CC=[['ty','Type'],['at','Recorded at (Dhaka)'],['dd','Dose date'],['md','Medicine'],['gn','Generic'],['sl','Slot'],['g','Glucose (mmol/L)'],['u','Insulin taken (units)'],['a','Advised (units)'],['ml','Meal'],['w','Timing'],['ea','Eating'],['s','Systolic'],['d','Diastolic'],['by','Entered by']],
-SLE={M:'Morning',N:'Noon',E:'Night',D:'Injection'},TME={f:'Before meal',p:'2h after meal'},EAE={y:'Normal',h:'Half',n:'Not eating'},
-stamp=t=>{const d=sh(t);return ymd(d)+' '+P(d.getHours())+':'+P(d.getMinutes())};
-function csvRows(){const r=[],all=MD.concat(PRN),nm=id=>all.find(m=>m.id==id)||{n:id,g:''};
-Object.keys(D.tk).forEach(k=>{const[p,id,s]=k.split('|'),m=nm(id);r.push({t:D.tk[k],ty:'Medicine dose',at:stamp(D.tk[k]),dd:p,md:m.n,gn:m.g,sl:SLE[s]||s,by:(D.tb||{})[k]})});
-Object.keys(D.pr).forEach(k=>{const[p,id]=k.split('|'),m=nm(id);D.pr[k].forEach(t=>r.push({t,ty:'As-needed dose',at:stamp(t),dd:p,md:m.n,gn:m.g}))});
-D.ins.forEach(e=>r.push({t:e.t,ty:'Insulin/Sugar',at:stamp(e.t),md:'Ansulin R',g:e.g,u:e.u,a:e.a,ml:SLE[e.ml]||e.ml,w:TME[e.w]||e.w,ea:EAE[e.ea]||e.ea,by:e.by}));
-D.bp.forEach(e=>r.push({t:e.t,ty:'Blood pressure',at:stamp(e.t),s:e.s,d:e.d,by:e.by}));
-return r.sort((a,b)=>a.t-b.t)}
-function rEx(){const n=csvRows().length;$('exn').textContent='মোট '+bn(n)+'টি রেকর্ড';$('ex').disabled=!n}
-$('ex').onclick=()=>{const q=v=>{v=v==null?'':String(v);return/[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v},
-csv='\ufeff'+[CC.map(c=>c[1])].concat(csvRows().map(o=>CC.map(c=>o[c[0]]))).map(r=>r.map(q).join(',')).join('\r\n'),
-a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sinho-medication-records-'+ymd(NOW())+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1e4)};
-function renderAll(){rLive();rSlots();rPrn();rEv();rLogs();rDiet();rEx()}
+function renderAll(){rLive();rSlots();rPrn();rEv();rLogs();rDiet()}
 function calc(){const g=parseFloat(en($('g').value)),o=$('rc');if(!(g>0&&g<60)){o.innerHTML='';return}
 const r=adv(g,$('w').value,$('ml').value,$('ea').value),s=gs(g,$('w').value);
 o.innerHTML='<div class="al '+r.c+'"><b>'+r.h+'</b><br>'+r.t+'<br><small>সুগার '+bn(g)+' mmol/L — '+s[0]+'</small></div>';$('u').value=r.u}
 ['g','w','ml','ea'].forEach(i=>{$(i).addEventListener('input',calc);$(i).addEventListener('change',calc)});
 $('sv').onclick=()=>{const g=parseFloat(en($('g').value)),u=parseFloat(en($('u').value));
 if(!(g>0&&g<60)||!(u>=0&&u<=50)){$('rc').innerHTML='<div class="al er">সুগার ও ইউনিট ইংরেজি সংখ্যায় লিখুন (যেমন 6.5 ও 6)।</div>';return}
-const r=adv(g,$('w').value,$('ml').value,$('ea').value);D.ins.push({t:Date.now(),g,u,ml:$('ml').value,w:$('w').value,ea:$('ea').value,a:r.u});save();$('g').value='';$('u').value='';
+const T=pt('gdt');if(!(T>0)||T>Date.now()+6e4){$('rc').innerHTML='<div class="al er">তারিখ ও সময় ঠিক নেই; ভবিষ্যতের সময় দেওয়া যাবে না।</div>';return}
+const r=adv(g,$('w').value,$('ml').value,$('ea').value);D.ins.push({t:T,g,u,ml:$('ml').value,w:$('w').value,ea:$('ea').value,a:r.u});D.ins.sort((x,y)=>x.t-y.t);save();$('gdt').value='';$('g').value='';$('u').value='';
 $('rc').innerHTML=$('w').value=='f'&&u>r.u?'<div class="al er"><b>সংরক্ষিত হয়েছে — কিন্তু সতর্কতা</b><br><small>পরামর্শ ছিল '+(r.u?bn(r.u)+' ইউনিটের বেশি নয়':'ইনসুলিন না নেওয়ার')+'; আপনি '+bn(u)+' ইউনিট লিখেছেন। ১ ঘণ্টা পর সুগার আবার মাপুন ও ডাক্তারকে জানান।</small></div>':'<div class="al ok">সংরক্ষিত হয়েছে ✓</div>';renderAll()};
 $('bv').onclick=()=>{const s=parseInt(en($('bs').value)),d=parseInt(en($('bd').value));
 if(!(s>50&&s<260&&d>30&&d<160)){$('bm').innerHTML='<div class="al er">উপরের ও নিচের প্রেসার ইংরেজি সংখ্যায় লিখুন (যেমন 120 ও 80)।</div>';return}
-D.bp.push({t:Date.now(),s,d});save();$('bs').value='';$('bd').value='';const r=bs(s,d);$('bm').innerHTML='<div class="al '+r[1]+'">'+bn(s)+'/'+bn(d)+' — '+r[0]+'</div>';renderAll()};
+const T=pt('bdt');if(!(T>0)||T>Date.now()+6e4){$('bm').innerHTML='<div class="al er">তারিখ ও সময় ঠিক নেই; ভবিষ্যতের সময় দেওয়া যাবে না।</div>';return}
+D.bp.push({t:T,s,d});D.bp.sort((x,y)=>x.t-y.t);save();$('bs').value='';$('bd').value='';$('bdt').value='';const r=bs(s,d);$('bm').innerHTML='<div class="al '+r[1]+'">'+bn(s)+'/'+bn(d)+' — '+r[0]+'</div>';renderAll()};
+$('ex').onclick=()=>{const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',nm=id=>{const m=MD.concat(PRN).find(x=>x.id==id);return m?m.n+' ('+m.g+')':id},
+dt=t=>{const d=sh(t);return[ymd(d),P(d.getHours())+':'+P(d.getMinutes())]},E={y:'স্বাভাবিক',h:'অর্ধেক',n:'খেতে পারেননি'},R=[];
+Object.keys(D.tk).forEach(k=>{const[p,m,sl]=k.split('|');R.push([D.tk[k],['ওষুধ (নিয়মিত)',p,dt(D.tk[k])[1],nm(m),SL[sl]?SL[sl][0]:sl,'','','','','','','',D.tb[k]||'']])});
+Object.keys(D.pr).forEach(k=>{const[p,m]=k.split('|');D.pr[k].forEach(t=>R.push([t,['ওষুধ (প্রয়োজনে)',p,dt(t)[1],nm(m),'','','','','','','','','']]))});
+D.ins.forEach(e=>{const x=dt(e.t);R.push([e.t,['সুগার ও ইনসুলিন',x[0],x[1],'',SL[e.ml]?SL[e.ml][0]:'',e.g,e.u,e.a==null?'':e.a,e.w=='p'?'খাবারের ২ ঘণ্টা পরে':'খাবারের আগে',E[e.ea]||'','','',e.by||'']])});
+D.bp.forEach(e=>{const x=dt(e.t);R.push([e.t,['প্রেসার',x[0],x[1],'','','','','','','',e.s,e.d,e.by||'']])});
+if(!R.length){$('exm').textContent='এখনো কোনো রেকর্ড নেই।';return}
+R.sort((a,b)=>a[0]-b[0]);
+const H=['ধরন','তারিখ','সময় (ঢাকা)','ওষুধ','বেলা','সুগার (mmol/L)','ইনসুলিন (ইউনিট)','পরামর্শ (ইউনিট)','সুগার মাপা','খাবার','প্রেসার উপরের','প্রেসার নিচের','কে লিখেছেন'],
+csv='\ufeff'+[H].concat(R.map(r=>r[1])).map(r=>r.map(q).join(',')).join('\r\n'),
+a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='medication-records-'+ymd(NOW())+'.csv';document.body.appendChild(a);a.click();a.remove();
+$('exm').textContent=bn(R.length)+'টি রেকর্ড ডাউনলোড হয়েছে।'};
 $('pv').onclick=()=>{sel=add(sel,-1);rSlots();rPrn()};$('nx').onclick=()=>{sel=add(sel,1);rSlots();rPrn()};$('td').onclick=()=>{sel=dt0(NOW());rSlots();rPrn()};
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const a=t.dataset;
 if(a.gm){$('ml').value=a.gm;$('w').value=a.gw;calc();$('g').scrollIntoView({block:'center'});$('g').focus({preventScroll:true});return}
