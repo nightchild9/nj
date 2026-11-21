@@ -73,6 +73,7 @@ button[disabled]{opacity:.4;cursor:default}
 .bd{font-style:normal;font-size:.8rem;font-weight:700;background:var(--ac);color:var(--oa);border-radius:10px;padding:2px 9px;margin-right:6px}.bd.b2{background:var(--in);color:#fff}.bd.b3{background:var(--er);color:#fff}
 #sf.now::before{content:'এখন সুগার মাপুন ও রেকর্ড করুন';display:block;font-weight:700;color:var(--ac);margin-bottom:6px}
 details.dn2,details.g{margin:8px 0}details.dn2>summary,details.g>summary{min-height:48px;display:flex;align-items:center;padding:0 14px;border:1px solid var(--ln);border-radius:12px;background:var(--cd);color:var(--ok);font-weight:600;cursor:pointer}details.g>summary{color:var(--ink)}
+.it.pri{border-left:4px solid var(--wn)}.pw{display:block;color:var(--wn);font-weight:600}.cd textarea{width:100%;min-height:90px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--ink);font:inherit;padding:10px}
 </style>
 </head>
 <body>
@@ -110,6 +111,8 @@ details.dn2,details.g{margin:8px 0}details.dn2>summary,details.g>summary{min-hei
 <button class="p" id="vv">রেকর্ড করুন</button><div id="vm"></div><h3>সাম্প্রতিক রেকর্ড</h3><div id="vl"></div></div>
 
 <h2>ডাক্তারের নোট ও আগের রেকর্ডের টাইমলাইন</h2><div id="tl"></div>
+<details class="g"><summary>নতুন নোট যোগ করুন</summary><div class="cd"><div class="fg"><label>ডাক্তার<input id="ndr" type="text" placeholder="e.g. Dr. Mosaddeque Ahmed"></label><label>রোগ/অবস্থা (কমা দিয়ে)<input id="nim" type="text" placeholder="HTN, DM, CKD-5"></label><label class="w">পরামর্শ / নোট<textarea id="nad" rows="4"></textarea></label><label class="w">তারিখ ও সময় (ফাঁকা থাকলে এখনকার সময়)<input id="ndt" type="datetime-local"></label></div><button class="p" id="nbtn">নোট সংরক্ষণ করুন</button><div id="nmsg"></div></div></details>
+<h2>আগের প্রেসক্রিপশনে নেওয়া ডোজ (১৯ নভেম্বর বিকাল ৫টার পর)</h2><div id="pw2"></div>
 
 <h2>সব রেকর্ড ডাউনলোড</h2><div class="cd"><p class="mu">ওষুধ, সুগার ও ইনসুলিন, প্রেসার, শরীরের মাপ, ডাক্তারের নোট — সব রেকর্ড একটি CSV ফাইলে (Excel বা Google Sheets-এ খোলা যাবে)।</p><button class="p" id="ex">CSV ডাউনলোড করুন</button><p class="mu" id="exm"></p></div>
 
@@ -124,33 +127,39 @@ WIN={f:[-.75,.25],p:[1.75,3.25]},
 TGT={f:'লক্ষ্য ৫–৬ mmol/L (সর্বোচ্চ ৭-এর নিচে)',p:'লক্ষ্য ৭–৮ mmol/L (সর্বোচ্চ ১০-এর নিচে)'},S=new Date(2026,10,16),K='sinho_med_v1',
 MN=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'],
 WD=['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'],
-MD=[
+CUT=new Date(2026,10,19,17,0),MD=[
 {id:'tic',n:'Ticalog 90mg',g:'Ticagrelor',u:'স্টেন্টে রক্ত জমাট বাঁধা রোধ',s:'ME',q:'১টি',m:'খাবারের পরে'},
 {id:'asp',n:'Carva 75mg',g:'Aspirin',u:'রক্ত জমাট বাঁধা রোধ',s:'N',q:'১টি',m:'খাবারের পরে'},
 {id:'ros',n:'Rosuva EZ 20/10mg',g:'Rosuvastatin+Ezetimibe',u:'কোলেস্টেরল কমায়',s:'E',q:'১টি',m:'রাতের খাবারের আগে'},
-{id:'bis',n:'Bisocor 2.5mg',g:'Bisoprolol',u:'হৃদস্পন্দন ও প্রেসার নিয়ন্ত্রণ',s:'M',q:'১টি',m:'সকালে'},
-{id:'nit',n:'Anril SR 2.6mg',g:'Nitroglycerin',u:'বুকে ব্যথা প্রতিরোধ',s:'MN',q:'১টি',m:'সকাল ৮টা ও দুপুর ২টা'},
+{id:'bis',n:'Bisocor 2.5mg',g:'Bisoprolol',u:'হৃদস্পন্দন ও প্রেসার নিয়ন্ত্রণ',s:'M',q:'১টি',m:'সকালে',until:CUT},
+{id:'bis',n:'Bisocor 2.5mg',g:'Bisoprolol',u:'হৃদস্পন্দন ও প্রেসার নিয়ন্ত্রণ',s:'M',q:'১টি',m:'খাবারের পরে',from:CUT},
+{id:'nit',n:'Anril SR 2.6mg',g:'Nitroglycerin',u:'বুকে ব্যথা প্রতিরোধ',s:'MN',q:'১টি',m:'খাবারের আগে • সকাল ৮টা ও দুপুর ২টায়'},
 {id:'tri',n:'Angivent-MR 35mg',g:'Trimetazidine',u:'হৃদপেশির সুরক্ষা',s:'ME',q:'১টি',m:'খাবারের পরে'},
 {id:'pan',n:'Trupan 20mg',g:'Pantoprazole',u:'গ্যাস্ট্রিক থেকে পাকস্থলী রক্ষা',s:'ME',q:'১টি',m:'খাবারের আধা ঘণ্টা আগে'},
-{id:'fus',n:'Fusid 40mg',g:'Furosemide',u:'বাড়তি পানি কমায়',s:'M',q:'১টি',m:'সকাল ৮টা'},
-{id:'suz',n:'Suzyme 325mg',g:'Pancreatin',u:'হজমে সাহায্য (অগ্ন্যাশয়)',s:'MNE',q:'১টি',m:'খাবারের পরে'},
+{id:'fus',n:'Fusid 40mg',g:'Furosemide',u:'বাড়তি পানি কমায়',s:'M',q:'১টি',m:'খাবারের আগে • সকাল ৮টায়'},
+{id:'suz',n:'Suzyme 325mg',g:'Pancreatin',u:'হজমে সাহায্য (অগ্ন্যাশয়)',s:'MNE',q:'১টি',m:'খাবারের পরে',until:CUT},
+{id:'suz',n:'Suzyme 325mg',g:'Pancreatin',u:'হজমে সাহায্য (অগ্ন্যাশয়)',s:'MNE',q:'১টি',m:'খাবার খাওয়ার মাঝে',from:CUT},
 {id:'urs',n:'Urso 300mg',g:'Ursodeoxycholic acid',u:'পিত্ত ও লিভারের সহায়ক',s:'ME',q:'১টি',m:'খাবারের পরে'},
 {id:'sev',n:'Sevel 800mg',g:'Sevelamer',u:'রক্তে ফসফেট কমায় (কিডনি)',s:'MNE',q:'২টি',m:'খাবারের পরে'},
 {id:'all',n:'Esloric 100mg',g:'Allopurinol',u:'ইউরিক অ্যাসিড কমায়',s:'E',q:'১টি',m:'খাবারের পরে'},
-{id:'sod',n:'Sodibar 600mg',g:'Sodium bicarbonate',u:'রক্তের অ্যাসিড কমায়',s:'MNE',q:'১টি',m:'খাবারের আগে',until:new Date(2026,10,18)},
-{id:'sod',n:'Sodibar 600mg',g:'Sodium bicarbonate',u:'রক্তের অ্যাসিড কমায়',s:'MNE',q:'২টি',m:'খাবারের আগে',from:new Date(2026,10,19)},
-{id:'ket',n:'Ketosteril',g:'Ketoanalogues + amino acids',u:'কিডনি রোগে (ডাক্তারের পরামর্শে)',s:'MNE',q:'২টি',m:'চালিয়ে যাবেন (ডাক্তারের নির্দেশ)',from:new Date(2026,10,19)},
-{id:'epo',n:'Recormon 10000 IU',g:'Epoetin beta',u:'রক্তস্বল্পতা — চামড়ার নিচে ইনজেকশন',s:'D',q:'১টি ইনজেকশন',m:'মঙ্গলবার ও শুক্রবার',wd:[2,5],until:new Date(2026,10,18)},
-{id:'epo',n:'Eposis 10000 IU',g:'Erythropoietin',u:'রক্তস্বল্পতা — চামড়ার নিচে ইনজেকশন (Recormon-এর বদলে)',s:'D',q:'১টি ইনজেকশন',m:'মঙ্গলবার ও শুক্রবার',wd:[2,5],from:new Date(2026,10,19)},
-{id:'mon',n:'Montene 10mg',g:'Montelukast',u:'শ্বাসনালী ও অ্যালার্জি',s:'E',q:'১টি',m:'খাবারের পরে',d:30},
+{id:'sod',n:'Sodibar 600mg',g:'Sodium bicarbonate',u:'রক্তের অ্যাসিড কমায়',s:'MNE',q:'১টি',m:'খাবারের আগে',until:CUT},
+{id:'sod',n:'Sodibar 600mg',g:'Sodium bicarbonate',u:'রক্তের অ্যাসিড কমায়',s:'MNE',q:'২টি',m:'খাবারের আগে',from:CUT},
+{id:'ket',n:'Ketosteril',g:'Ketoanalogues + amino acids',u:'কিডনি রোগে (ডাক্তারের পরামর্শে)',s:'MNE',q:'২টি',m:'খাবার খাওয়ার মাঝে • চালিয়ে যাবেন',from:CUT},
+{id:'epo',n:'Recormon 10000 IU',g:'Epoetin beta',u:'রক্তস্বল্পতা — চামড়ার নিচে ইনজেকশন',s:'D',q:'১টি ইনজেকশন',m:'মঙ্গলবার ও শুক্রবার',wd:[2,5],until:CUT},
+{id:'epo',n:'Eposis 10000 IU',g:'Erythropoietin',u:'রক্তস্বল্পতা — চামড়ার নিচে ইনজেকশন (Recormon-এর বদলে)',s:'D',q:'১টি ইনজেকশন',m:'মঙ্গলবার ও শুক্রবার',wd:[2,5],from:CUT},
+{id:'mon',n:'Montene 10mg',g:'Montelukast',u:'শ্বাসনালী ও অ্যালার্জি',s:'E',q:'১টি',m:'খাবারের পরে',d:30,until:CUT},
+{id:'mon',n:'Montene 10mg',g:'Montelukast',u:'শ্বাসনালী ও অ্যালার্জি',s:'E',q:'১টি',m:'খাবারের পরে',d:30,from:CUT},
 {id:'thi',n:'AB1 100mg',g:'Thiamine (B1)',u:'ভিটামিন বি১',s:'MNE',q:'২টি',m:'খাবারের পরে',d:30},
-{id:'acy',n:'Tylace',g:'Acetylcysteine',u:'কফ ও শ্বাসকষ্টে সহায়ক (আধা গ্লাস পানিতে গুলে)',s:'ME',q:'১টি',m:'খাবারের পরে',d:14},
-{id:'cef',n:'Cef-3 DS 400mg',g:'Cefixime',u:'অ্যান্টিবায়োটিক — কোর্স শেষ করুন',s:'ME',q:'১টি',m:'১২ ঘণ্টা পরপর',d:10,tm:{M:8,E:20}}],
+{id:'acy',n:'Tylace 600mg',g:'Acetylcysteine',u:'কফ ও শ্বাসকষ্টে সহায়ক (আধা গ্লাস পানিতে গুলে)',s:'ME',q:'১টি',m:'খাবারের পরে',d:14,until:CUT},
+{id:'acy',n:'Tylace 600mg',g:'Acetylcysteine',u:'কফ ও শ্বাসকষ্টে সহায়ক (আধা গ্লাস পানিতে গুলে)',s:'ME',q:'১টি',m:'খাবারের পরে',d:14,from:CUT},
+{id:'cef',n:'Cef-3 DS 400mg',g:'Cefixime',u:'অ্যান্টিবায়োটিক — কোর্স শেষ করুন',s:'ME',q:'১টি',m:'১২ ঘণ্টা পরপর',d:10,tm:{M:8,E:20},until:CUT},
+{id:'cef',n:'Cef-3 DS 400mg',g:'Cefixime',u:'অ্যান্টিবায়োটিক — কোর্স শেষ করুন',s:'ME',q:'১টি',m:'১২ ঘণ্টা পরপর',d:10,from:CUT,tm:{M:8,E:20},mm:{M:'নাস্তার পরে • ১২ ঘণ্টা পরপর',E:'রাতের খাবারের আগে • ১২ ঘণ্টা পরপর'}}],
 PRN=[
-{id:'ana',n:'Anadol 50mg',g:'Tramadol',u:'ব্যথা হলে',q:'১টি',m:'সকাল ও রাতে (১+০+১) — যেদিন ব্যথা হয়',mx:2,from:new Date(2026,10,19)},
+{id:'ana',n:'Anadol 50mg',g:'Tramadol',u:'ব্যথা হলে',q:'১টি',m:'সকাল ও রাতে (১+০+১) — যেদিন ব্যথা হয়',mx:2,from:CUT},
 {id:'par',n:'Ace Power 1000mg',g:'Paracetamol',u:'ব্যথা হলে',q:'১টি',m:'খাবারের পরে',d:3,mx:3},
-{id:'bro',n:'Laxyl 3mg',g:'Bromazepam',u:'ঘুম না এলে',q:'১টি',m:'রাত ১০টায়',mx:1},
-{id:'sop',n:'Sopilax',g:'Sodium picosulfate',u:'কোষ্ঠকাঠিন্যে',q:'২ চা-চামচ',m:'শোয়ার আগে; পাতলা পায়খানা হলে বন্ধ',mx:1}];
+{id:'par',n:'Ace Power 1000mg',g:'Paracetamol',u:'ব্যথা বা জ্বর হলে',q:'১টি',m:'খাবারের পরে — যেদিন ব্যথা বা জ্বর হয়',mx:3,from:CUT},
+{id:'bro',n:'Laxyl 3mg',g:'Bromazepam',u:'ঘুমের সমস্যা হলে',q:'১টি',m:'রাত ১০টায়',mx:1},
+{id:'sop',n:'Sopilax',g:'Sodium picosulfate',u:'কোষ্ঠকাঠিন্য হলে',q:'২ চা-চামচ',m:'শোয়ার আগে; পাতলা পায়খানা হলে বন্ধ',mx:1}];
 const $=i=>document.getElementById(i),bn=s=>String(s).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]),
 en=s=>String(s).replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/,/g,'.').trim(),
 P=n=>String(n).padStart(2,'0'),ymd=d=>d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate()),
@@ -159,7 +168,8 @@ at=(d,h)=>new Date(d.getFullYear(),d.getMonth(),d.getDate(),h),dif=(a,b)=>Math.r
 fd=d=>bn(d.getDate())+' '+MN[d.getMonth()],
 ft=(h,m)=>(h<4?'রাত':h<6?'ভোর':h<12?'সকাল':h<15?'দুপুর':h<18?'বিকাল':h<20?'সন্ধ্যা':'রাত')+' '+bn((h%12||12)+':'+P(m||0)),
 sh=t=>new Date(t+new Date(t).getTimezoneOffset()*6e4+216e5),NOW=()=>sh(Date.now()),tm=t=>{const d=sh(t);return ft(d.getHours(),d.getMinutes())};
-const pt=id=>{const v=$(id).value;return v?Date.parse(v+':00+06:00'):Date.now()},hm=h=>ft(Math.floor(h),Math.round(h%1*60)),OP={},
+const pt=id=>{const v=$(id).value;return v?Date.parse(v+':00+06:00'):Date.now()},hm=h=>ft(Math.floor(h),Math.round(h%1*60)),OP={},P1='রোগী এটি আগের ডিসচার্জ প্রেসক্রিপশন অনুযায়ী নিয়েছেন, নতুন প্রেসক্রিপশন আপডেট অনুযায়ী নয়।',P2='রোগী এগুলো আগের ডিসচার্জ প্রেসক্রিপশন অনুযায়ী নিয়েছেন, নতুন প্রেসক্রিপশন আপডেট অনুযায়ী নয়।',
+rxOf=k=>{const[p,i,sl]=k.split('|'),m=MD.find(x=>x.id==i),q=p.split('-').map(Number);return new Date(q[0],q[1]-1,q[2],m?hrOf(m,sl):12)>=CUT?'new':'prior'},rk=(m,k)=>{const t=(m.mm&&m.mm[k])||m.m;return t.includes('মাঝে')?1:t.includes('পরে')?2:0},
 DIET=[{n:'সকালের নাস্তা',s:'নাস্তা',a:8.5,z:9,i:['২ টা রুটি','১ কাপ সবজি (আলু ছাড়া)','১ টি ডিম সিদ্ধ'],o:'১ চা চামচ'},
 {n:'ফল (সকাল)',s:'ফল',a:10,z:10.5,i:['১ টা আপেল বা নাশপাতি (মাঝারি সাইজের) বা পেয়ারা (বিচি ছাড়া) বা পাকা পেঁপে (সামান্য পরিমানে)']},
 {n:'দুপুরের খাবার',s:'দুপুর',a:14,z:14.5,i:['১ কাপ ভাত (১৬০ গ্রাম)','১ কাপ সবজি (আলু ছাড়া)','১/২ লাল শাক বা লাউ শাক (সপ্তাহে ১-২ দিন)','৩ পিস মাছ বা মুরগির মাংস (৩০ গ্রাম/পিস)'],o:'২ চা চামচ'},
@@ -173,34 +183,35 @@ G=[['ফল',[['ok','খাবেন','আপেল (১টা), নাশপা
 ['দুধ ও দুগ্ধজাতীয় খাবার',[['ok','খাবেন','ননীবিহীন দুধ'],['er','খাবেন না','ঘন দুধ, পাউডার দুধ, দই']]]];
 let D={};try{D=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
 D.tk=D.tk||{};D.pr=D.pr||{};D.ins=D.ins||[];D.bp=D.bp||[];
-D.tb=D.tb||{};D.vt=D.vt||[];D.cn=D.cn||[];
+D.tb=D.tb||{};D.rx=D.rx||{};D.vt=D.vt||[];D.cn=D.cn||[];
 const U='https://azejgshuplqurdgelhbw.supabase.co/rest/v1/',AK='sb_publishable_GO-_QMkFeQTyUt_GGs7KAg_XGB_r3jV',iso=t=>new Date(t).toISOString();
 let PC=localStorage.getItem('sinho_pc')||'',WHO=localStorage.getItem('sinho_who')||'',R=null,dirty=false,busy=false;
 const api=(p,o={})=>fetch(U+p,{...o,headers:{apikey:AK,'x-profile-key':PC,'Content-Type':'application/json',Prefer:'return=minimal',...(o.headers||{})}}).then(r=>{if(!r.ok)throw r.status;return r.text()}).then(t=>t?JSON.parse(t):null);
 function flat(d){const o={};
-Object.keys(d.tk).forEach(k=>{const[p,m,s]=k.split('|');o['m|'+k]=['med_doses',{dose_date:p,med_id:m,slot:s,taken_at:iso(d.tk[k])},'dose_date=eq.'+p+'&med_id=eq.'+m+'&slot=eq.'+s,(d.tb||{})[k]]});
+Object.keys(d.tk).forEach(k=>{const[p,m,s]=k.split('|');const x=(d.rx||{})[k]||'prior';o['m|'+k+'|'+x]=['med_doses',{dose_date:p,med_id:m,slot:s,taken_at:iso(d.tk[k]),rx_version:x},'dose_date=eq.'+p+'&med_id=eq.'+m+'&slot=eq.'+s,(d.tb||{})[k]]});
 Object.keys(d.pr).forEach(k=>{const[p,m]=k.split('|');d.pr[k].forEach(t=>o['p|'+k+'|'+t]=['prn_doses',{dose_date:p,med_id:m,taken_at:iso(t)},'dose_date=eq.'+p+'&med_id=eq.'+m+'&taken_at=eq.'+encodeURIComponent(iso(t))])});
 d.ins.forEach(e=>o['i|'+e.t]=['insulin_logs',{logged_at:iso(e.t),glucose_mmol:e.g,units_taken:e.u,advised_units:e.a,meal:e.ml,timing:e.w,eating:e.ea},'logged_at=eq.'+encodeURIComponent(iso(e.t)),e.by]);
 d.bp.forEach(e=>o['b|'+e.t]=['bp_logs',{logged_at:iso(e.t),systolic:e.s,diastolic:e.d},'logged_at=eq.'+encodeURIComponent(iso(e.t)),e.by]);
-(d.vt||[]).forEach(e=>o['v|'+e.t]=['vitals_logs',{logged_at:iso(e.t),temperature_f:e.f,height_cm:e.h,bmi:e.i},'logged_at=eq.'+encodeURIComponent(iso(e.t)),e.by]);return o}
-async function push(){if(!PC||!WHO||!R||busy)return;busy=true;try{let f;do{dirty=false;f=flat(D);const q=[];
-Object.keys(f).forEach(i=>{if(!R[i]){const r=f[i];q.push(api(r[0],{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({profile_key:PC,...r[1],entered_by:r[3]||WHO})}))}});
+(d.vt||[]).forEach(e=>o['v|'+e.t]=['vitals_logs',{logged_at:iso(e.t),temperature_f:e.f,height_cm:e.h,bmi:e.i},'logged_at=eq.'+encodeURIComponent(iso(e.t)),e.by]);
+(d.cn||[]).forEach(e=>o['n|'+e.t]=['clinical_notes',{noted_at:iso(e.t),doctor:e.dr||null,impression:e.im||[],advice:e.ad||null},'noted_at=eq.'+encodeURIComponent(iso(e.t)),e.by]);return o}
+async function push(){if(!PC||!WHO||!R||busy)return;busy=true;try{let f;do{dirty=false;f=flat(D);const q=[],z=[];
+Object.keys(f).forEach(i=>{if(!R[i]){const r=f[i];z.push(api(r[0],{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({profile_key:PC,...r[1],entered_by:r[3]||WHO})}))}});
 Object.keys(R).forEach(i=>{if(!f[i])q.push(api(R[i][0]+'?'+R[i][2],{method:'DELETE'}))});
-await Promise.all(q);R=f}while(dirty)}catch(e){dirty=true}busy=false}
+await Promise.all(q);await Promise.all(z);R=f}while(dirty)}catch(e){dirty=true}busy=false}
 async function pull(first){const g=(t,o)=>api(t+'?select=*&order='+o+'.asc'),[a,b,c,d,v,cn]=await Promise.all([g('med_doses','taken_at'),g('prn_doses','taken_at'),g('insulin_logs','logged_at'),g('bp_logs','logged_at'),g('vitals_logs','logged_at'),g('clinical_notes','noted_at')]);
-const n={tk:{},pr:{},ins:[],bp:[],tb:{},vt:[],cn:[]};
-a.forEach(r=>{const k=r.dose_date+'|'+r.med_id+'|'+r.slot;n.tk[k]=Date.parse(r.taken_at);n.tb[k]=r.entered_by});
+const n={tk:{},pr:{},ins:[],bp:[],tb:{},rx:{},vt:[],cn:[]};
+a.forEach(r=>{const k=r.dose_date+'|'+r.med_id+'|'+r.slot;n.tk[k]=Date.parse(r.taken_at);n.tb[k]=r.entered_by;n.rx[k]=r.rx_version});
 b.forEach(r=>{const k=r.dose_date+'|'+r.med_id;(n.pr[k]=n.pr[k]||[]).push(Date.parse(r.taken_at))});
 c.forEach(r=>n.ins.push({t:Date.parse(r.logged_at),g:+r.glucose_mmol,u:+r.units_taken,a:r.advised_units==null?null:+r.advised_units,ml:r.meal,w:r.timing,ea:r.eating,by:r.entered_by}));
 d.forEach(r=>n.bp.push({t:Date.parse(r.logged_at),s:r.systolic,d:r.diastolic,by:r.entered_by}));
 v.forEach(r=>n.vt.push({t:Date.parse(r.logged_at),f:r.temperature_f==null?null:+r.temperature_f,h:r.height_cm==null?null:+r.height_cm,i:r.bmi==null?null:+r.bmi,by:r.entered_by}));
 cn.forEach(r=>n.cn.push({t:Date.parse(r.noted_at),dr:r.doctor||'',im:r.impression||[],ad:r.advice||'',by:r.entered_by}));
 R=flat(n);
-if(first){const L=D;Object.keys(L.tk).forEach(k=>{if(!n.tk[k]){n.tk[k]=L.tk[k];n.tb[k]=(L.tb||{})[k]||WHO}});
+if(first){const L=D;Object.keys(L.tk).forEach(k=>{if(!n.tk[k]){n.tk[k]=L.tk[k];n.tb[k]=(L.tb||{})[k]||WHO;n.rx[k]=(L.rx||{})[k]||'prior'}});
 Object.keys(L.pr).forEach(k=>{const s=new Set(n.pr[k]||[]);L.pr[k].forEach(t=>s.add(t));n.pr[k]=[...s].sort()});
-['ins','bp','vt'].forEach(k=>{const s=new Set(n[k].map(e=>e.t));(L[k]||[]).forEach(e=>{if(!s.has(e.t))n[k].push({...e,by:e.by||WHO})});n[k].sort((x,y)=>x.t-y.t)});dirty=true}
+['ins','bp','vt','cn'].forEach(k=>{const s=new Set(n[k].map(e=>e.t));(L[k]||[]).forEach(e=>{if(!s.has(e.t))n[k].push({...e,by:e.by||WHO})});n[k].sort((x,y)=>x.t-y.t)});dirty=true}
 D=n;try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}renderAll();push()}
-const save=()=>{Object.keys(D.tk).forEach(k=>{if(!D.tb[k])D.tb[k]=WHO||''});[...D.ins,...D.bp,...D.vt].forEach(e=>{if(!e.by)e.by=WHO||''});try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}dirty=true;push()};
+const save=()=>{Object.keys(D.rx).forEach(k=>{if(!D.tk[k])delete D.rx[k]});Object.keys(D.tk).forEach(k=>{if(!D.tb[k])D.tb[k]=WHO||''});[...D.ins,...D.bp,...D.vt,...D.cn].forEach(e=>{if(!e.by)e.by=WHO||''});try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}dirty=true;push()};
 let first=true;const sync=()=>{if(!PC||!WHO||dirty||busy)return;pull(first).then(()=>{first=false}).catch(()=>{})};
 function pick(n){WHO=n;localStorage.setItem('sinho_who',n);$('gt').hidden=true;$('wb').hidden=false;$('wb').textContent='👤 '+n+' ▾';sync()}
 async function names(){const b=$('gb');b.innerHTML='<p>কে ফর্ম পূরণ করছেন?</p>';try{(await api('form_users?select=name&order=sort_order')).forEach(x=>{const e=document.createElement('button');e.textContent=x.name;e.onclick=()=>pick(x.name);b.appendChild(e)})}catch(e){}
@@ -208,11 +219,15 @@ const c=document.createElement('button');c.textContent='পাসকোড ব�
 function gate(){$('gt').hidden=false;if(PC)return names();const b=$('gb');b.innerHTML='<p>পাসকোড দিন</p><input id="pc" type="password" inputmode="numeric" autocomplete="off"><button class="go" id="pk">ঠিক আছে</button><p id="ge"></p>';
 $('pk').onclick=async()=>{PC=en($('pc').value.trim());try{const r=await api('form_users?select=name&limit=1');if(!r||!r.length)throw 0;localStorage.setItem('sinho_pc',PC);names()}catch(e){PC='';$('ge').textContent='পাসকোড ভুল, বা ইন্টারনেট নেই'}}}
 $('wb').onclick=()=>gate();
-const endOf=m=>m.d?add(S,m.d-1):null,
-act=(m,d)=>d>=S&&(!m.from||d>=m.from)&&(!m.until||d<=m.until)&&(!m.d||d<=endOf(m))&&(!m.wd||m.wd.includes(d.getDay())),
+const endOf=m=>m.d?add(m.from||S,m.d-1):null,
+act=(m,d)=>d>=S&&(!m.from||d>=dt0(m.from))&&(!m.until||d<=dt0(m.until))&&(!m.d||d<=endOf(m))&&(!m.wd||m.wd.includes(d.getDay())),
 hrOf=(m,k)=>(m.tm&&m.tm[k])||SL[k][1],
 crs=(m,d)=>{if(m.wd)return'প্রতি মঙ্গল ও শুক্রবার';if(!m.d)return'চলমান — ডাক্তার না বলা পর্যন্ত';const e=endOf(m),r=dif(d,e);return r>0?fd(e)+' পর্যন্ত • বাকি '+bn(r)+' দিন':'কোর্সের শেষ দিন'};
-function items(d){const r=[];MD.forEach(m=>{if(act(m,d)){[...m.s].forEach(k=>{const h=hrOf(m,k);if(!(ymd(d)==ymd(S)&&h<12))r.push({m,k,h,key:ymd(d)+'|'+m.id+'|'+k})})}});return r}
+const actOld=(o,d)=>d>=S&&(!o.d||d<=endOf(o))&&(!o.wd||o.wd.includes(d.getDay()));
+function items(d){const r=[];MD.forEach(m=>{if(act(m,d)){[...m.s].forEach(k=>{const h=hrOf(m,k),t=at(d,h);if(!(ymd(d)==ymd(S)&&h<12)&&(!m.from||t>=m.from)&&(!m.until||t<m.until))r.push({m,k,h,key:ymd(d)+'|'+m.id+'|'+k})})}});
+return r.map(x=>{const o=x.m.from&&MD.find(y=>y.id==x.m.id&&y.until);return o&&D.tk[x.key]&&(D.rx[x.key]||'prior')=='prior'&&actOld(o,d)?{...x,m:o,pri:1}:x})}
+function priKeys(){const L=[];Object.keys(D.tk).forEach(k=>{const[p,i,sl]=k.split('|'),q=p.split('-').map(Number),dd=new Date(q[0],q[1]-1,q[2]),o=MD.find(y=>y.id==i&&y.until);
+if(o&&MD.some(y=>y.id==i&&y.from)&&(D.rx[k]||'prior')=='prior'&&at(dd,hrOf(o,sl))>=CUT&&actOld(o,dd))L.push([k,dd,o,sl])});return L.sort((x,y)=>x[1]-y[1])}
 function gs(g,w){if(g<4)return['কম — বিপজ্জনক','er'];if(w=='p')return g<=8?['ভালো','ok']:g<10?['নিয়ন্ত্রণে','ok']:g<15?['বেশি','wn']:['অনেক বেশি','er'];
 return g<5?['একটু কম','wn']:g<=6?['চমৎকার','ok']:g<7?['নিয়ন্ত্রণে','ok']:g<15?['বেশি','wn']:['অনেক বেশি','er']}
 function bs(s,d){return s>=180||d>=110?['খুব বেশি','er']:s>=130||d>=80?['একটু বেশি','wn']:s<100||d<60?['কম','wn']:['ঠিক আছে','ok']}
@@ -238,7 +253,7 @@ E(add(S,13),'পূর্ণ বিশ্রামের শেষ দিন (�
 E(add(S,28),'স্টেন্ট বসাতে ভর্তি (LAD ও LCX) — আনুমানিক; ডাক্তারের সাথে তারিখ ঠিক করুন','dr');
 E(add(S,29),'কষ্টকর কাজ নিষেধের শেষ দিন (১ মাস)','rl');
 E(add(S,41),'বাইরের কাজ নিষেধের শেষ দিন; এরপর স্বাভাবিক কাজ (৬ সপ্তাহ)','rl');
-MD.concat(PRN).forEach(m=>{if(m.d)E(add(S,m.d-1),m.n+' ('+m.g+') কোর্সের শেষ দিন','cr')});
+MD.concat(PRN).forEach(m=>{if(m.d&&!m.until)E(add(m.from||S,m.d-1),m.n+' ('+m.g+') কোর্সের শেষ দিন','cr')});
 return r.filter(x=>x.d>=td).sort((a,b)=>a-b==0?0:a.d-b.d)}
 let sel=dt0(NOW()),cur=ymd(sel);if(sel<S)sel=S;
 function rClock(){const n=NOW();$('ck').innerHTML='<b><span class="dot"></span>'+tm(Date.now())+'</b>'+WD[n.getDay()]+', '+fd(n)+' '+bn(n.getFullYear())+' • ঢাকা সময় (UTC+৬)'}
@@ -261,6 +276,7 @@ const A=[],by=a=>{const o={};a.forEach(x=>(o[x.k]=o[x.k]||[]).push(x));return o}
 bL=by(late),bD=by(due),sfx=k=>SL[k][2]+(k=='D'?'':' ওষুধ');
 Object.keys(bL).forEach(k=>A.push(['er','<b>দেরি হয়েছে — '+sfx(k)+' নেওয়া হয়নি</b><br><small>'+nm(bL[k])+'</small>']));
 Object.keys(bD).forEach(k=>A.push(['wn','<b>এখন '+sfx(k)+' নেওয়ার সময়</b><br><small>'+nm(bD[k])+'</small>']));
+const pk=priKeys().length;if(pk)A.push(['wn','<b>'+bn(pk)+'টি ডোজ আগের প্রেসক্রিপশন অনুযায়ী নেওয়া হয়েছে</b><br><small>রেকর্ড অংশে "আগের প্রেসক্রিপশনে নেওয়া ডোজ" দেখুন; চাইলে নতুন নিয়মে আপডেট করুন।</small>']);
 const cm=DIET.find(m=>hh>=m.a-.25&&hh<m.z+.5),um=cm?null:DIET.find(m=>m.a-1<=hh&&hh<m.a-.25);
 if(cm||um){const m=cm||um;A.push(['in','<b>'+(cm?'এখন খাবারের সময়':'শীঘ্রই খাবারের সময় ('+bn(Math.round((m.a-hh)*60))+' মিনিট পর)')+' — '+m.n+' ('+hm(m.a)+' – '+hm(m.z)+')</b><br><small>'+m.i.join(' • ')+(m.o?' • তেলের পরিমাণ '+m.o:'')+'</small>'])}
 A.push(['in','<b>আজকের খাবারের সময়</b><br><small>'+DIET.map(m=>m.s+' '+hm(m.a)).join(' • ')+'</small>']);
@@ -281,8 +297,8 @@ function rSlots(){const now=NOW(),td=dt0(now),isT=ymd(sel)==ymd(td),L=items(sel)
 $('dl').textContent=WD[sel.getDay()]+', '+fd(sel)+' '+bn(sel.getFullYear());$('pv').disabled=sel<=S;$('nx').disabled=sel>=td;$('td').disabled=isT;
 const card=(k,a,cls,bd)=>{const n=a.filter(x=>D.tk[x.key]).length;
 let h='<div class="cd '+cls+'"><div class="sh"><span>'+(bd?'<em class="bd'+(cls=='miss'?' b3':'')+'">'+bd+'</em>':'')+(k=='D'?'ইনজেকশন (মঙ্গল ও শুক্র)':ft(SL[k][1]))+'</span><span>'+bn(n)+'/'+bn(a.length)+'<button data-all="'+k+'"'+(n==a.length?' disabled':'')+'>সব নিয়েছি</button></span></div>';
-a.forEach(x=>{const m=x.m,tk=D.tk[x.key],t=at(sel,x.h).getTime(),late=isT&&!tk&&now>t+18e5,due=isT&&!tk&&!late&&now>=t-18e5;
-h+='<label class="it '+(tk?'dn':late?'late':due?'due':'')+'"><input type="checkbox" data-t="'+x.key+'"'+(tk?' checked':'')+'><span><b>'+m.n+'</b> — '+m.q+'<small>'+m.u+' • '+m.m+(m.tm&&m.tm[k]?' ('+ft(m.tm[k])+')':'')+'</small><small>'+crs(m,sel)+(tk&&isT?' • নেওয়া হয়েছে '+tm(tk)+(D.tb[x.key]?' • '+D.tb[x.key]:''):late?' • দেরি হয়েছে':'')+'</small></span></label>'});return h+'</div>'};
+a.slice().sort((p,q)=>rk(p.m,k)-rk(q.m,k)).forEach(x=>{const m=x.m,tk=D.tk[x.key],t=at(sel,x.h).getTime(),late=isT&&!tk&&now>t+18e5,due=isT&&!tk&&!late&&now>=t-18e5;
+h+='<label class="it '+(tk?'dn':late?'late':due?'due':'')+(x.pri?' pri':'')+'"><input type="checkbox" data-t="'+x.key+'"'+(tk?' checked':'')+'><span><b>'+m.n+'</b> — '+m.q+'<small>'+m.u+' • '+((m.mm&&m.mm[k])||m.m)+(m.tm&&m.tm[k]?' ('+ft(m.tm[k])+')':'')+'</small><small>'+crs(m,sel)+(tk&&isT?' • নেওয়া হয়েছে '+tm(tk)+(D.tb[x.key]?' • '+D.tb[x.key]:''):late?' • দেরি হয়েছে':'')+'</small>'+(x.pri?'<small class="pw">'+P1+'</small>':'')+'</span></label>'});return h+'</div>'};
 const ks=['D','M','N','E'].filter(k=>L.some(x=>x.k==k));let h='';
 if(!isT)h=ks.map(k=>card(k,L.filter(x=>x.k==k),'','')).join('');
 else{const I=ks.map(k=>{const a=L.filter(x=>x.k==k);return{k,a,st:Math.min(...a.map(x=>at(sel,x.h).getTime()))-18e5,un:a.some(x=>!D.tk[x.key])}}).filter(o=>now>=o.st),
@@ -292,7 +308,7 @@ $('sl').innerHTML=h||'<p class="mu">'+(isT?'এখনো কোনো ওষু�
 function rDiet(){const now=NOW(),hh=now.getHours()+now.getMinutes()/60,cm=DIET.find(m=>hh>=m.a-.25&&hh<m.z+.5),nx=cm?null:DIET.find(m=>m.a>hh);
 $('dt').innerHTML='<p class="mu">স্কয়ার হাসপাতালের ডায়েট ও নিউট্রিশন বিভাগের তালিকা (ডায়াবেটিক ও কিডনী রোগীর জন্য)</p>'+DIET.map(m=>'<div class="cd'+(m===cm?' now':m===nx?' nx':'')+'"><div class="sh"><span>'+(m===cm?'<em class="bd">এখন</em>':m===nx?'<em class="bd b2">পরের</em>':'')+m.n+'</span><span>'+hm(m.a)+' – '+hm(m.z)+'</span></div>'+m.i.map(x=>'<div>• '+x+'</div>').join('')+(m.o?'<div class="mu">তেলের পরিমাণ: '+m.o+'</div>':'')+'</div>').join('')}
 function rPrn(){const td=dt0(NOW());let h='';
-PRN.forEach(m=>{const e=endOf(m);if(sel<S||(m.from&&sel<m.from)||(e&&sel>e))return;const k=ymd(sel)+'|'+m.id,a=D.pr[k]||[],full=a.length>=m.mx;
+PRN.forEach(m=>{const e=endOf(m);if(sel<S||(m.from&&sel<dt0(m.from))||(e&&sel>e))return;const k=ymd(sel)+'|'+m.id,a=D.pr[k]||[],full=a.length>=m.mx;
 h+='<div class="cd"><div class="sh"><span>'+m.n+' <small>('+m.g+')</small></span><span>'+bn(a.length)+'/'+bn(m.mx)+'</span></div><div class="mu">'+m.u+' • '+m.q+' • '+m.m+' • দিনে সর্বোচ্চ '+bn(m.mx)+'বার'+(e?' • '+fd(e)+' পর্যন্ত':'')+'</div><div class="rw"><button data-pr="'+m.id+'"'+(full||sel>td?' disabled':'')+'>নিলাম</button>'+(a.length?'<button class="x" data-un="'+m.id+'">শেষটি বাতিল</button>':'')+'<small>'+(ymd(sel)==ymd(td)?a.map(tm).join(', '):'')+'</small></div>'+(full?'<div class="al wn">এই দিনের সর্বোচ্চ মাত্রা শেষ।</div>':'')+'</div>'});
 $('pr').innerHTML=h||'<p class="mu">এই তারিখে প্রয়োজনের ওষুধের কোর্স নেই।</p>'}
 function rEv(){const td=dt0(NOW()),T={dr:'ডাক্তার',ts:'পরীক্ষা',ep:'ইনজেকশন',rl:'নিয়ম',cr:'কোর্স শেষ'};
@@ -303,13 +319,18 @@ $('il').innerHTML=row(D.ins,'ins',e=>'সুগার '+bn(e.g)+' • ইনস�
 $('bl').innerHTML=row(D.bp,'bp',e=>bn(e.s)+'/'+bn(e.d)+' — '+bs(e.s,e.d)[0]+(e.by?' • '+e.by:''));
 $('vl').innerHTML=row(D.vt,'vt',e=>[e.f!=null?'তাপমাত্রা '+bn(e.f)+'°F':'',e.h!=null?'উচ্চতা '+bn(e.h)+' সেমি':'',e.i!=null?'BMI '+bn(e.i):''].filter(Boolean).join(' • ')+(e.by?' • '+e.by:''))}
 function rTl(){const X=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),dy=e=>ymd(sh(e.t));
-$('tl').innerHTML=D.cn.slice().sort((a,b)=>b.t-a.t).map(n=>{const d=dy(n),v=D.bp.filter(e=>dy(e)==d).map(e=>'প্রেসার '+bn(e.s)+'/'+bn(e.d)).concat(D.vt.filter(e=>dy(e)==d).map(e=>[e.f!=null?'তাপমাত্রা '+bn(e.f)+'°F':'',e.h!=null?'উচ্চতা '+bn(e.h)+' সেমি':'',e.i!=null?'BMI '+bn(e.i):''].filter(Boolean).join(' • ')));
-return'<div class="cd"><div class="sh"><span>'+fd(sh(n.t))+' '+bn(sh(n.t).getFullYear())+'</span><span>'+X(n.dr)+'</span></div><div>'+n.im.map(x=>'<span class="tg wn">'+X(x)+'</span> ').join('')+'</div>'+(v.length?'<div class="mu">মাপ: '+v.join(' • ')+'</div>':'')+(n.ad?'<div class="mu">'+X(n.ad)+'</div>':'')+'</div>'}).join('')||'<p class="mu">এখনো কোনো নোট নেই।</p>'}
+$('tl').innerHTML=D.cn.map((n,i)=>[n,i]).sort((a,b)=>b[0].t-a[0].t).map(([n,i])=>{const d=dy(n),v=D.bp.filter(e=>dy(e)==d).map(e=>'প্রেসার '+bn(e.s)+'/'+bn(e.d)).concat(D.vt.filter(e=>dy(e)==d).map(e=>[e.f!=null?'তাপমাত্রা '+bn(e.f)+'°F':'',e.h!=null?'উচ্চতা '+bn(e.h)+' সেমি':'',e.i!=null?'BMI '+bn(e.i):''].filter(Boolean).join(' • ')));
+return'<div class="cd"><div class="sh"><span>'+fd(sh(n.t))+' '+bn(sh(n.t).getFullYear())+'</span><span>'+X(n.dr)+'<button class="x" data-x="cn:'+i+'" aria-label="মুছুন">×</button></span></div><div>'+n.im.map(x=>'<span class="tg wn">'+X(x)+'</span> ').join('')+'</div>'+(v.length?'<div class="mu">মাপ: '+v.join(' • ')+'</div>':'')+(n.ad?'<div class="mu">'+X(n.ad)+'</div>':'')+'</div>'}).join('')||'<p class="mu">এখনো কোনো নোট নেই।</p>'}
 $('vv').onclick=()=>{const f=parseFloat(en($('vtf').value)),h=parseFloat(en($('vhc').value)),i=parseFloat(en($('vbm').value)),T=pt('vdt'),ok=(x,a,b)=>isNaN(x)||(x>=a&&x<=b);
 if((isNaN(f)&&isNaN(h)&&isNaN(i))||!ok(f,90,110)||!ok(h,50,250)||!ok(i,8,80)){$('vm').innerHTML='<div class="al er">অন্তত একটি মাপ ইংরেজি সংখ্যায় লিখুন (তাপমাত্রা °F ৯০–১১০, উচ্চতা সেমি ৫০–২৫০, BMI ৮–৮০)।</div>';return}
 if(!(T>0)||T>Date.now()+6e4){$('vm').innerHTML='<div class="al er">তারিখ ও সময় ঠিক নেই; ভবিষ্যতের সময় দেওয়া যাবে না।</div>';return}
 D.vt.push({t:T,f:isNaN(f)?null:f,h:isNaN(h)?null:h,i:isNaN(i)?null:i});D.vt.sort((x,y)=>x.t-y.t);save();['vtf','vhc','vbm','vdt'].forEach(x=>$(x).value='');$('vm').innerHTML='<div class="al ok">সংরক্ষিত হয়েছে ✓</div>';renderAll()};
-function renderAll(){rLive();rSlots();rPrn();rEv();rLogs();rDiet();rTl()}
+function rPri(){const L=priKeys();$('pw2').innerHTML=L.length?'<div class="al wn"><b>'+P2+'</b></div>'+L.map(x=>'<div class="lg"><span>'+fd(x[1])+' • '+SL[x[3]][0]+'</span><span>'+x[2].n+' — '+x[2].q+' • '+((x[2].mm&&x[2].mm[x[3]])||x[2].m)+'</span><button data-cv="'+x[0]+'">নতুন নিয়মে আপডেট</button></div>').join('')+'<button class="p" data-cvall="1">সব নতুন নিয়মে আপডেট করুন</button>':'<p class="mu">আগের প্রেসক্রিপশন অনুযায়ী নেওয়া কোনো ডোজ নেই ✓</p>'}
+$('nbtn').onclick=()=>{const T=pt('ndt'),ad=$('nad').value.trim().slice(0,2000),im=$('nim').value.split(',').map(x=>x.trim()).filter(Boolean),dr=$('ndr').value.trim().slice(0,150),o=$('nmsg');
+if(!ad&&!im.length){o.innerHTML='<div class="al er">রোগ/অবস্থা বা পরামর্শ লিখুন।</div>';return}
+if(!(T>0)||T>Date.now()+6e4){o.innerHTML='<div class="al er">তারিখ ও সময় ঠিক নেই; ভবিষ্যতের সময় দেওয়া যাবে না।</div>';return}
+D.cn.push({t:T,dr,im,ad,by:WHO||''});D.cn.sort((a,b)=>a.t-b.t);save();['ndr','nim','nad','ndt'].forEach(x=>$(x).value='');o.innerHTML='<div class="al ok">সংরক্ষিত হয়েছে ✓</div>';renderAll()};
+function renderAll(){rLive();rSlots();rPrn();rEv();rLogs();rDiet();rTl();rPri()}
 function calc(){const g=parseFloat(en($('g').value)),o=$('rc');if(!(g>0&&g<60)){o.innerHTML='';return}
 const r=adv(g,$('w').value,$('ml').value,$('ea').value),s=gs(g,$('w').value);
 o.innerHTML='<div class="al '+r.c+'"><b>'+r.h+'</b><br>'+r.t+'<br><small>সুগার '+bn(g)+' mmol/L — '+s[0]+'</small></div>';$('u').value=r.u}
@@ -341,12 +362,13 @@ $('pv').onclick=()=>{sel=add(sel,-1);rSlots();rPrn()};$('nx').onclick=()=>{sel=a
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const a=t.dataset;
 if(a.gm){$('ml').value=a.gm;$('w').value=a.gw;calc();$('g').scrollIntoView({block:'center'});$('g').focus({preventScroll:true});return}
 if(a.x){const p=a.x.split(':');D[p[0]].splice(+p[1],1)}
-else if(a.all){items(sel).filter(x=>x.k==a.all).forEach(x=>{D.tk[x.key]=D.tk[x.key]||Date.now()})}
+else if(a.cv){D.rx[a.cv]='new'}else if(a.cvall){priKeys().forEach(x=>{D.rx[x[0]]='new'})}
+else if(a.all){items(sel).filter(x=>x.k==a.all).forEach(x=>{if(!D.tk[x.key]){D.tk[x.key]=Date.now();D.rx[x.key]=rxOf(x.key)}})}
 else if(a.pr){const k=ymd(sel)+'|'+a.pr;(D.pr[k]=D.pr[k]||[]).push(Date.now())}
 else if(a.un){const k=ymd(sel)+'|'+a.un;(D.pr[k]||[]).pop()}
 else return;
 save();renderAll()});
-document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.t;if(!k)return;if(e.target.checked)D.tk[k]=Date.now();else delete D.tk[k];save();renderAll()});
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.t;if(!k)return;if(e.target.checked){D.tk[k]=Date.now();D.rx[k]=rxOf(k)}else delete D.tk[k];save();renderAll()});
 $('dg').innerHTML=G.map(g=>'<h3>'+g[0]+'</h3>'+g[1].map(r=>'<div class="al '+r[0]+'"><b>'+r[1]+':</b> '+r[2]+'</div>').join('')).join('');document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)OP[k]=e.target.open},true);
 const h0=NOW().getHours();$('ml').value=h0<11?'M':h0<17?'N':'E';
 $('mh').textContent='সুগার মাপার সময়সূচি (খাবারের সময় ধরা হয়েছে): '+['M','N','E'].map(k=>MEAL[k].n+' '+ft(Math.floor(MEAL[k].h),Math.round(MEAL[k].h%1*60))).join(' • ')+' — প্রতিবার খাবারের আগে ও ২ ঘণ্টা পরে।';
